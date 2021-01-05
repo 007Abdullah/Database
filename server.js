@@ -1,3 +1,14 @@
+let users = [
+    {
+        uname: "Sameer",
+        email: "kb337137@gmail.com",
+        password: "abc",
+        phone: "03121278181",
+        gender: "Male"
+    }
+]
+
+
 var PORT = process.env.PORT || 5000;
 const express = require("express");
 const cors = require("cors");
@@ -79,7 +90,7 @@ app.post("/signup", (req, res, next) => {
         if (!err) {
             res.send({
                 message: "user created",
-                status:200
+                status: 200
             });
         }
         else {
@@ -88,7 +99,20 @@ app.post("/signup", (req, res, next) => {
         }
     });
 });
+var userSchema = new mongoose.Schema({
+    uname: String,
+    email: String,
+    password: String,
+    phone: String,
+    gender: String,
+    createdon: { type: Date, 'default': Date.now }
+});
 
+var userModel = mongoose.model("users", userSchema);
+
+app.post("/login", (req, res, next) => {
+
+})
 
 app.listen(PORT, () => {
     console.log("Server is Running :", PORT);
