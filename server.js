@@ -84,7 +84,7 @@ app.post("/signup", (req, res, next) => {
         }
         else {
             console.log(err);
-            res.status(500).send("user create error, " + err)
+            res.send("user create error, " + err)
         }
     });
 });
