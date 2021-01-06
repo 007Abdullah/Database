@@ -79,63 +79,60 @@ app.post("/signup", (req, res, next) => {
         }`);
         return;
     }
-    var newUser = new userModel({
-        "uname": req.body.uname,
-        "email": req.body.email,
-        "password": req.body.password,
-        "phone": req.body.phone,
-        "gender": req.body.gender,
-    });
-    newUser.save((err, data) => {
-        bcrypt.stringToHash(req.body.password).then(string => {
-            console.log("hash: ", string);
-        })
-
-        bcrypt.varifyHash(req.body.password, "$2a$10$W3/bbpG0rexRwKBabxbp7efehubSnxDLMfdgdfsgsdg7OCEj0MEPAac98EUa9mW").then(result => {
-            if (result) {
-                console.log("matched");
-            } else {
-                console.log("not matched");
+    bcrypt.stringToHash(req.body.password).then(passwordHash => {
+        console.log("hash: ", passwordHash);
+        var newUser = new userModel({
+            "uname": req.body.uname,
+            "email": req.body.email,
+            "password": passwordHash,
+            "phone": req.body.phone,
+            "gender": req.body.gender,
+        });
+        newUser.save((err, data) => {
+            if (!err) {
+                res.send({
+                    message: "user created",
+                    status: 200
+                });
             }
-        }).catch(e => {
-            console.log("error: ", e)
-        })
-
-        bcrypt.validateHash("$2a$10$W3/bbpG0rexRwKBabxbp7efehubSnxDLMfdgdfsgsdg7OCEj0MEPAac98EUa9mW").then(result => {
-            if (result) {
-                console.log("hash is valid")
-            } else {
-                console.log("hash is invalid")
+            else {
+                console.log(err);
+                res.send("user create error, " + err)
             }
-        })
-        if (!err) {
-            res.send({
-                message: "user created",
-                status: 200
-            });
-        }
-        else {
-            console.log(err);
-            res.send("user create error, " + err)
-        }
+        });
     });
+
 });
 
 
+
 app.post("/login", (req, res, next) => {
-    userModel.findOne({ email: req.body.email, password: req.body.password }, function (err, data) {
-        if (err) {
-            console.log(err)
-            res.status(500).send();
+
+    userModel.findOne({ email: req.body.email }, function (err, data) {
+        if (data) {
+            bcrypt.varifyHash(req.body.password, data.password).then(psswordverfiy => {
+                if (psswordverfiy) {
+                    console.log("matched");
+                    res.status(200).send({
+                        message: "Login Success"
+                    })
+                } else {
+                    console.log("not matched");
+                    res.status(401).send({
+                        message: "Password Wrong"
+                    })
+                }
+            }).catch(e => {
+                console.log("error: ", e)
+            })
         }
-        if (!data) {
-            return res.status(404).send({
-                message: "user not found"
-            });
+        else {
+            res.send({
+                message: "user not exist"
+            })
         }
-        return res.status(200).send({
-            message: "Login Successfully"
-        })
+
+
     })
 })
 
