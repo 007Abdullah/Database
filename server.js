@@ -79,29 +79,44 @@ app.post("/signup", (req, res, next) => {
         }`);
         return;
     }
-    bcrypt.stringToHash(req.body.password).then(passwordHash => {
-        console.log("hash: ", passwordHash);
-        var newUser = new userModel({
-            "uname": req.body.uname,
-            "email": req.body.email,
-            "password": passwordHash,
-            "phone": req.body.phone,
-            "gender": req.body.gender,
-        });
-        newUser.save((err, data) => {
-            if (!err) {
+    userModel.findOne({ email: req.body.email }, function (err, user) {
+        if (!err) {
+            if (user) {
                 res.send({
-                    message: "user created",
-                    status: 200
-                });
+                    message: "Email ALready Exist"
+                })
             }
             else {
-                console.log(err);
-                res.send("user create error, " + err)
+                bcrypt.stringToHash(req.body.password).then(passwordHash => {
+                    console.log("hash: ", passwordHash);
+                    var newUser = new userModel({
+                        "uname": req.body.uname,
+                        "email": req.body.email,
+                        "password": passwordHash,
+                        "phone": req.body.phone,
+                        "gender": req.body.gender,
+                    });
+                    newUser.save((err, data) => {
+                        if (!err) {
+                            res.send({
+                                message: "user created",
+                                status: 200
+                            });
+                        }
+                        else {
+                            console.log(err);
+                            res.send("user create error, " + err)
+                        }
+                    });
+                });
             }
-        });
-    });
-
+        }
+        else {
+            res.send({
+                message: "DB ERROR" + err
+            })
+        }
+    })
 });
 
 
