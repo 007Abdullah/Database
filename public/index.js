@@ -1,5 +1,5 @@
-const url = "https//databas-example.herokuapp.com"
-// const url = "http://localhost:5000"
+// const url = "https//databas-example.herokuapp.com"
+const url = "http://localhost:5000"
 
 function signup() {
     let user = {

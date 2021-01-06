@@ -16,7 +16,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const path = require("path");
-
+const bcrypt = require("bcrypt-inzi");
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +87,27 @@ app.post("/signup", (req, res, next) => {
         "gender": req.body.gender,
     });
     newUser.save((err, data) => {
+        bcrypt.stringToHash(req.body.password).then(string => {
+            console.log("hash: ", string);
+        })
+
+        bcrypt.varifyHash(req.body.password, "$2a$10$W3/bbpG0rexRwKBabxbp7efehubSnxDLMfdgdfsgsdg7OCEj0MEPAac98EUa9mW").then(result => {
+            if (result) {
+                console.log("matched");
+            } else {
+                console.log("not matched");
+            }
+        }).catch(e => {
+            console.log("error: ", e)
+        })
+
+        bcrypt.validateHash("$2a$10$W3/bbpG0rexRwKBabxbp7efehubSnxDLMfdgdfsgsdg7OCEj0MEPAac98EUa9mW").then(result => {
+            if (result) {
+                console.log("hash is valid")
+            } else {
+                console.log("hash is invalid")
+            }
+        })
         if (!err) {
             res.send({
                 message: "user created",
@@ -99,19 +120,23 @@ app.post("/signup", (req, res, next) => {
         }
     });
 });
-var userSchema = new mongoose.Schema({
-    uname: String,
-    email: String,
-    password: String,
-    phone: String,
-    gender: String,
-    createdon: { type: Date, 'default': Date.now }
-});
 
-var userModel = mongoose.model("users", userSchema);
 
 app.post("/login", (req, res, next) => {
-
+    userModel.findOne({ email: req.body.email, password: req.body.password }, function (err, data) {
+        if (err) {
+            console.log(err)
+            res.status(500).send();
+        }
+        if (!data) {
+            return res.status(404).send({
+                message: "user not found"
+            });
+        }
+        return res.status(200).send({
+            message: "Login Successfully"
+        })
+    })
 })
 
 app.listen(PORT, () => {
